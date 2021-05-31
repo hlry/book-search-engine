@@ -11,8 +11,15 @@ import { removeBookId } from '../utils/localStorage';
 const SavedBooks = () => {
   const { loading, data } = useQuery(GET_ME);
   const userData = data?.me || {};
+
+  const userDataLength = Object.keys(userData).length;
   // eslint-disable-next-line
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
+
+  // if data isn't here yet, say so
+  if (loading) {
+    return <div>Loading...</div>;
+  };
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -29,14 +36,14 @@ const SavedBooks = () => {
       });
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   // if data isn't here yet, say so
-  if (loading) {
-    return <div>LOADING...</div>
+  if (!userDataLength) {
+    return <h2>LOADING...</h2>;
   };
 
   return (
@@ -56,7 +63,7 @@ const SavedBooks = () => {
           {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
-                {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
+                {book.image ? (<Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' />) : null}
                 <Card.Body>
                   <Card.Title>{book.title}</Card.Title>
                   <p className='small'>Authors: {book.authors}</p>
