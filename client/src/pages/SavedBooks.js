@@ -3,23 +3,17 @@ import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap
 
 // replacing API getme and delete book with query and mutation
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { GET_ME } from '../utils/queries.js';
-import { REMOVE_BOOK } from '../utils/mutations.js';
+import { GET_ME } from '../utils/queries';
+import { REMOVE_BOOK } from '../utils/mutations';
 import Auth from '../utils/auth';
-import { removeBookId } from '../utils/localStorage';
+import { removeBookId, saveBookIds } from '../utils/localStorage';
 
 const SavedBooks = () => {
   const { loading, data } = useQuery(GET_ME);
   const userData = data?.me || {};
 
-  const userDataLength = Object.keys(userData).length;
-  // eslint-disable-next-line
+  // const userDataLength = Object.keys(userData).length;
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
-
-  // if data isn't here yet, say so
-  if (loading) {
-    return <div>Loading...</div>;
-  };
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -31,20 +25,27 @@ const SavedBooks = () => {
 
     try {
       // eslint-disable-next-line
-      const { data } = await removeBook({
-        variables: { bookId }
+      const response = await removeBook({
+        variables: { bookId: bookId }
       });
+      if (!response) {
+        throw new Error("Something went wrong!");
+      }
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
-      console.error(err);
+      console.error(error);
     }
   };
 
   // if data isn't here yet, say so
-  if (!userDataLength) {
+  if (loading) {
     return <h2>LOADING...</h2>;
   };
+
+  // sync localStorage with what was returned from the userData query
+  const savedBookIds = userData.savedBooks.map((book) => book.bookId);
+  saveBookIds(savedBookIds);
 
   return (
     <>
@@ -56,7 +57,8 @@ const SavedBooks = () => {
       <Container>
         <h2>
           {userData.savedBooks.length
-            ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
+            ? `Viewing ${userData.savedBooks.length} 
+            saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <CardColumns>

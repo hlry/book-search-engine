@@ -19,7 +19,9 @@ const SearchBooks = () => {
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
   useEffect(() => {
-    return () => saveBookIds(savedBookIds);
+    return () => {
+      saveBookIds(savedBookIds);
+    };
   });
 
   // eslint-disable-next-line
@@ -35,7 +37,6 @@ const SearchBooks = () => {
 
     try {
       const response = await searchGoogleBooks(searchInput);
-      console.log(response);
       if (!response.ok) {
         throw new Error('something went wrong!');
       }
@@ -44,16 +45,16 @@ const SearchBooks = () => {
 
       const bookData = items.map((book) => ({
         bookId: book.id,
-        authors: book.volumeInfo.authors || ['No author to display'],
         title: book.volumeInfo.title,
         description: book.volumeInfo.description,
+        authors: book.volumeInfo.authors || ['No author to display'],
         image: book.volumeInfo.imageLinks?.thumbnail || '',
       }));
 
       setSearchedBooks(bookData);
       setSearchInput('');
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -71,17 +72,19 @@ const SearchBooks = () => {
 
     try {
       const response = await saveBook({
-        variables: { bookData: { ...bookToSave } }
+        variables: {
+          input: bookToSave,
+        }
       });
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error('something went wrong!');
       }
 
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
