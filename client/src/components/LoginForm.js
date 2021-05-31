@@ -9,6 +9,7 @@ import Auth from '../utils/auth';
 
 const LoginForm = () => {
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
+  // eslint-disable-next-line 
   const [login, { error }] = useMutation(LOGIN_USER);
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -29,7 +30,7 @@ const LoginForm = () => {
       Auth.login(data.login.token);
       console.log(data);
     } catch (e) {
-      console.error(err);
+      console.error(e);
       setShowAlert(true);
     }
 
